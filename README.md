@@ -1,343 +1,303 @@
-# NexaCPU — A Real CPU, Built From Scratch
+<div align="center">
 
-> A complete CPU designed from first principles: Verilog hardware core → animated browser visualizer → real FPGA silicon.
+# NexaCPU
 
----
+**A real CPU, designed from first principles.**
 
-## Table of Contents
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-visualizer--plum.vercel.app-38bdf8?style=for-the-badge&logo=vercel&logoColor=white)](https://visualizer-plum.vercel.app)
+[![Phase 1](https://img.shields.io/badge/Phase%201%20Verilog-124%20tests%20passing-22c55e?style=for-the-badge)](hardware/)
+[![Phase 2](https://img.shields.io/badge/Phase%202%20Visualizer-deployed-a78bfa?style=for-the-badge)](https://visualizer-plum.vercel.app)
+[![ISA](https://img.shields.io/badge/ISA-16--bit%20RISC%20%C2%B7%2015%20instructions-f59e0b?style=for-the-badge)](#the-nexacpu-instruction-set)
 
-1. [Project Overview](#project-overview)
-2. [Setup — Toolchain Installation](#setup--toolchain-installation)
-3. [Verilog Basics — What You Need to Know](#verilog-basics--what-you-need-to-know)
-4. [The NexaCPU Instruction Set](#the-nexacpu-instruction-set)
-5. [Phase 1 — Verilog CPU Core](#phase-1--verilog-cpu-core)
-6. [Phase 2 — Animated Visual Simulator](#phase-2--animated-visual-simulator)
-7. [Phase 3 — FPGA Hardware](#phase-3--fpga-hardware)
-8. [Project Structure](#project-structure)
+<br/>
 
----
+*16-bit RISC · 8 registers · Harvard architecture · Single-cycle execution*
 
-## Project Overview
-
-NexaCPU is a complete, original CPU design built across three layers:
-
-| Layer | What it proves | Where it lives | Status |
-|-------|---------------|----------------|--------|
-| **Phase 1: Verilog core** | Hardware correctness — this is the real design | `hardware/` | ✅ Complete |
-| **Phase 2: Visual simulator** | An accurate, watchable representation of the CPU executing | `visualizer/` | ✅ Live at [visualizer-plum.vercel.app](https://visualizer-plum.vercel.app) |
-| **Phase 3: FPGA deployment** | Physical proof — real silicon, real results | `fpga/` | ⏭ Not pursued |
-
-The Verilog is the **source of truth**. The visualizer is a faithful behavioral mirror of it, verified to match instruction-for-instruction.
+</div>
 
 ---
 
-## Setup — Toolchain Installation
+NexaCPU is a complete CPU built from scratch — not a tutorial follow-along, not a black-box simulator. The hardware logic is written in Verilog, verified through 124 automated tests, and then faithfully mirrored in an animated browser visualizer where you can watch every instruction execute cycle by cycle.
 
-### Step 1 — Check your working directory
+**[→ Open the live visualizer](https://visualizer-plum.vercel.app)** — select a program, hit Play, and watch the CPU execute. Or click **✎ Custom** to write your own assembly program and run it on the CPU in real time.
 
-⚠️ **OneDrive warning**: If your project path contains `OneDrive`, move it before continuing.
-Long file paths and OneDrive syncing both cause subtle, hard-to-debug toolchain failures.
+---
 
-Your path should look like `C:\Projects\nexacpu` or similar. ✅
+## What's here
 
-### Step 2 — Install Icarus Verilog (the simulator/compiler)
-
-Icarus Verilog compiles `.v` files and runs simulations. It's free and open-source.
-
-**Option A — Direct installer (recommended for beginners):**
-1. Go to: https://bleyer.org/icarus/
-2. Download the latest Windows installer (e.g. `iverilog-v12-20220611-x64_setup.exe`)
-3. Run the installer. **On the "Select Components" screen, make sure GTKWave is checked** — the installer bundles it.
-4. The installer will offer to add Icarus to your PATH automatically — **accept this**.
-
-**Option B — Chocolatey (if you have it):**
 ```
-choco install icarus-verilog
+┌─────────────────────────────────────────────────────────┐
+│                        NexaCPU                          │
+│                                                         │
+│  Phase 1: Verilog core          Phase 2: Visualizer     │
+│  ─────────────────────          ────────────────────    │
+│  • ALU                          • Animated datapath     │
+│  • Register file (R0–R7)        • Step / play / speed   │
+│  • Program counter              • Live register view    │
+│  • Instruction memory           • Custom program editor │
+│  • Control unit                 • In-browser assembler  │
+│  • Data memory                  • Deployed on Vercel    │
+│  • Full CPU integration                                 │
+│  • Python assembler                                     │
+│  124 tests · all passing        visualizer-plum.vercel  │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### Step 3 — Verify the installation
+| | Phase 1 — Verilog | Phase 2 — Visualizer |
+|--|-------------------|----------------------|
+| **What it is** | The real hardware design in Verilog HDL | An animated browser mirror of Phase 1 |
+| **What it proves** | Hardware correctness | That the design is understandable to anyone |
+| **Verification** | 124 automated testbench assertions | JS model output verified against Verilog cycle-for-cycle |
+| **Location** | `hardware/` | `visualizer/` · [live](https://visualizer-plum.vercel.app) |
 
-Open a **new** terminal (PowerShell or CMD) after installing, then run:
+> The Verilog is the **source of truth**. The visualizer is a verified behavioral mirror — it produces identical results to the hardware simulation for every program.
+
+---
+
+## Quick start — run the visualizer
+
+No install needed. **[Open it in your browser.](https://visualizer-plum.vercel.app)**
+
+- Choose **Arithmetic**, **Countdown Loop**, or **Fibonacci** from the built-in programs
+- Hit **▶ Play** and watch data flow through the datapath in real time
+- Or click **✎ Custom** to write and run your own program
+
+---
+
+## Quick start — run the hardware simulation
+
+**Requirements:** [Icarus Verilog](https://bleyer.org/icarus/) (free, includes GTKWave)
 
 ```powershell
-iverilog -V
-gtkwave --version
+# Clone
+git clone https://github.com/Eddiegah/NexaCPU.git
+cd NexaCPU
+
+# Run all tests (from the hardware directory)
+cd hardware
+
+# Individual milestones
+iverilog -o testbenches/alu_tb.vvp testbenches/alu_tb.v src/alu.v
+vvp testbenches/alu_tb.vvp
+
+# Full CPU with all 3 programs
+iverilog -o testbenches/cpu_tb.vvp testbenches/cpu_tb.v `
+    src/alu.v src/register_file.v src/program_counter.v `
+    src/instruction_memory.v src/data_memory.v src/control_unit.v src/cpu.v
+vvp testbenches/cpu_tb.vvp
 ```
 
-You should see version strings for both. If `iverilog` is not found, the installer's PATH entry hasn't taken effect — try restarting your terminal, or log out and back in.
-
-### Step 4 — Python (for the assembler in Milestone 8)
-
-Python 3.8+ is required. Check with:
-```powershell
-python --version
-```
-If not installed: https://www.python.org/downloads/ — check "Add Python to PATH" during setup.
-
-### Step 5 — Node.js (for Phase 2 visualizer)
-
-Node 18+ required. Check with:
-```powershell
-node --version
-```
-If not installed: https://nodejs.org/ — use the LTS version.
-
----
-
-## Verilog Basics — What You Need to Know
-
-> **Read this before looking at any `.v` file.** This is the single biggest conceptual shift coming from software. Getting it wrong leads to bugs that are deeply confusing. Getting it right makes everything else click.
-
-### The fundamental difference: description vs. instruction
-
-In Python or JavaScript, you write a *sequence of instructions* that a processor executes one after another:
-
-```python
-# Software: top-to-bottom, one thing at a time
-x = 5
-y = x + 3
-z = y * 2
-```
-
-**Verilog does not work like this.** Verilog *describes physical circuits* — wires, logic gates, flip-flops. A circuit doesn't "execute" — it just *exists*, with signals continuously flowing through it. All parts of the circuit are active simultaneously.
-
-Think of it this way:
-- Software is a **recipe** — do this, then do that.
-- Verilog is a **blueprint** — here's what every component is and how they're connected.
-
-### Concurrency — everything happens at once
-
-In Verilog, when you write multiple `assign` statements or `always` blocks, **they all run in parallel**, not in sequence:
-
-```verilog
-// These three lines all describe simultaneous, permanent connections.
-// There is no "first" or "second" — they all exist at the same time.
-assign sum    = a + b;
-assign diff   = a - b;
-assign is_eq  = (a == b);
-```
-
-This is the **hardest mental shift**. When you look at a Verilog file, don't read it top to bottom like a program. Read it like a schematic — each statement describes a piece of hardware that exists permanently.
-
-### Two types of assignments
-
-**`assign` (combinational logic)** — describes a wire whose value is *continuously computed* from its inputs. The moment any input changes, the output updates instantly (in zero simulated time):
-
-```verilog
-wire [7:0] result;
-assign result = a + b;  // "result" is permanently wired to the sum of a and b
-```
-
-**`always @(posedge clk)` (sequential logic / registers)** — describes a flip-flop. The value only updates on the *rising edge* of the clock signal — that precise moment when the clock transitions from 0 to 1. Between clock edges, the stored value is frozen:
-
-```verilog
-always @(posedge clk) begin
-    register <= new_value;  // only captures new_value at each clock tick
-end
-```
-
-The `<=` here is the **non-blocking assignment** — use this inside `always @(posedge clk)` blocks. It means "schedule this update for the end of the current time step" — which is the correct behavior for flip-flops. Using `=` (blocking) in a clocked block is a common beginner mistake that causes subtle bugs.
-
-### What is a clock?
-
-A clock is a signal that oscillates between 0 and 1 at a fixed frequency — imagine a metronome. Every time it ticks (rises from 0 to 1), all the flip-flops in the design capture their new values simultaneously.
-
-This is how a CPU keeps everything synchronized. The ALU computes a result combinationally (instantly), and at the next clock edge, the result gets latched into a register. This "compute then latch" rhythm is the heartbeat of every digital system.
-
-```
-Clock:   __|‾|__|‾|__|‾|__|‾|__
-          ↑   ↑   ↑   ↑
-          registers update here
-```
-
-`posedge clk` in Verilog means "at the rising edge of clk" — that upward transition.
-
-### Wires vs. Registers (the naming is confusing — here's the truth)
-
-- `wire` — a physical connection. It has no memory. Its value is determined entirely by whatever is driving it right now.
-- `reg` — **despite the name, this does NOT always mean a hardware register/flip-flop.** A `reg` in Verilog just means "a variable that can be assigned inside an `always` block." Whether it actually becomes a flip-flop or just combinational logic depends on *how* you use it.
-  - If assigned inside `always @(posedge clk)` → it becomes a flip-flop (has memory)
-  - If assigned inside `always @(*)` → it's combinational (no memory, just like `assign`)
-
-This naming confusion trips up almost everyone. Remember: `reg` is a Verilog syntax requirement, not a promise of hardware behavior.
-
-### Module — the basic building block
-
-Everything in Verilog is a `module` — analogous to a function or class in software, but describing a hardware component. Modules have `input` and `output` ports (their interface), and internal logic:
-
-```verilog
-module adder(
-    input  [7:0] a,       // 8-bit input
-    input  [7:0] b,       // 8-bit input
-    output [7:0] sum      // 8-bit output
-);
-    assign sum = a + b;   // permanent connection: sum is always a+b
-endmodule
-```
-
-Modules are *instantiated* (connected) inside other modules, like placing a chip on a circuit board and wiring it up.
-
-### Testbenches — how we verify the design
-
-A testbench is a special Verilog module with **no ports** — it exists only for simulation. It instantiates the module under test, drives inputs at specific times, and (optionally) checks outputs. Think of it as the testing harness you'd write in software, but for hardware.
-
-```verilog
-module adder_tb;          // no ports — testbenches are self-contained
-    reg  [7:0] a, b;      // regs so we can drive them
-    wire [7:0] sum;       // wire to observe output
-
-    adder uut(.a(a), .b(b), .sum(sum));  // instantiate the adder
-
-    initial begin         // "initial" blocks run once at simulation start
-        a = 8'd5; b = 8'd3;
-        #10;              // wait 10 time units
-        $display("5+3 = %d (expect 8)", sum);
-        // ... more test cases
-        $finish;
-    end
-endmodule
-```
+Expected output: `ALL TESTS PASSED — Full CPU verified. ✓`
 
 ---
 
 ## The NexaCPU Instruction Set
 
-> **This is the contract everything else is built against.** Every module in Phase 1 is designed to implement exactly this ISA. The visualizer in Phase 2 implements exactly this ISA. Read and understand this table before looking at any implementation.
+15 instructions. Every module in Phase 1 implements this spec exactly. The visualizer mirrors it exactly.
 
-### 8-bit vs. 16-bit: the tradeoff
-
-| | 8-bit | 16-bit |
-|--|-------|--------|
-| Data width | 8 bits (values 0–255) | 16 bits (values 0–65535) |
-| Instruction width | 8 bits — tight, hard to encode immediate values | 16 bits — room for opcode + register fields + immediate in one word |
-| Memory addressing | Can only address 256 locations directly | Can address 256+ locations easily with immediate field |
-| Complexity | Simpler wiring, but awkward programs | Slightly wider buses, but programs are natural to write |
-| Real-world analogy | Like 8080/6502 era | Like early RISC designs |
-
-**Recommendation: 16-bit.** The extra width costs almost nothing in simulation or on an FPGA, and makes the instruction encoding clean and unambiguous. Trying to cram an opcode, two register addresses, *and* an immediate value into 8 bits forces ugly compromises that make the control unit harder to understand, not easier. We're here to learn clearly.
-
-### NexaCPU ISA — 16-bit instructions, 8 registers (R0–R7)
-
-**Instruction format:**
-
+**Instruction word format (16-bit):**
 ```
- 15     12  11   9   8    6   5          0
-┌──────────┬───────┬───────┬──────────────┐
-│  opcode  │  rd   │  rs1  │  imm6 / rs2  │
-│  4 bits  │ 3 bits│ 3 bits│   6 bits     │
-└──────────┴───────┴───────┴──────────────┘
+ 15    12  11   9  8    6  5         0
+┌────────┬───────┬───────┬───────────┐
+│ opcode │  rd   │  rs1  │ imm6/rs2  │
+│ 4 bits │ 3 bits│ 3 bits│  6 bits   │
+└────────┴───────┴───────┴───────────┘
 ```
 
-- **opcode** (bits 15–12): 4-bit operation code — identifies the instruction
-- **rd** (bits 11–9): destination register (R0–R7)
-- **rs1** (bits 8–6): source register 1
-- **imm6 / rs2** (bits 5–0): either a 6-bit immediate value (for LOADI, branches) or lower 3 bits used as rs2 (source register 2) for register-to-register ops
+| Mnemonic | Opcode | Operation | Notes |
+|----------|--------|-----------|-------|
+| `LOADI` | `0000` | `R[rd] ← imm6` | Immediate range: 0–63 |
+| `LOAD`  | `0001` | `R[rd] ← Mem[R[rs1]]` | |
+| `STORE` | `0010` | `Mem[R[rs1]] ← R[rs2]` | |
+| `MOV`   | `0011` | `R[rd] ← R[rs1]` | |
+| `ADD`   | `0100` | `R[rd] ← R[rs1] + R[rs2]` | Sets Z, N, C flags |
+| `SUB`   | `0101` | `R[rd] ← R[rs1] - R[rs2]` | Sets Z, N, C flags |
+| `AND`   | `0110` | `R[rd] ← R[rs1] & R[rs2]` | Sets Z, N, C flags |
+| `OR`    | `0111` | `R[rd] ← R[rs1] \| R[rs2]` | Sets Z, N, C flags |
+| `NOT`   | `1000` | `R[rd] ← ~R[rs1]` | Sets Z, N, C flags |
+| `CMP`   | `1001` | flags only (rs1 − rs2) | Sets Z, N, C — no register write |
+| `JMP`   | `1010` | `PC ← imm6` | Unconditional |
+| `BEQ`   | `1011` | `if Zero: PC ← imm6` | Needs prior CMP |
+| `BNE`   | `1100` | `if !Zero: PC ← imm6` | Needs prior CMP |
+| `BLT`   | `1101` | `if Negative: PC ← imm6` | Needs prior CMP |
+| `HALT`  | `1111` | stop | |
 
-**R0 is hardwired to zero** — reading R0 always returns 0, writes to R0 are discarded. This is a common and useful convention from RISC design.
-
-### Instruction Table
-
-| Mnemonic | Opcode | Format | Operation | Description |
-|----------|--------|--------|-----------|-------------|
-| `LOADI` | `0000` | `rd, imm6` | `R[rd] ← imm6` | Load a 6-bit immediate value into a register |
-| `LOAD` | `0001` | `rd, rs1` | `R[rd] ← Mem[R[rs1]]` | Load from data memory at address in rs1 |
-| `STORE` | `0010` | `rs1, rs2` | `Mem[R[rs1]] ← R[rs2]` | Store rs2 into data memory at address in rs1 |
-| `MOV` | `0011` | `rd, rs1` | `R[rd] ← R[rs1]` | Copy register rs1 to rd |
-| `ADD` | `0100` | `rd, rs1, rs2` | `R[rd] ← R[rs1] + R[rs2]` | Add two registers |
-| `SUB` | `0101` | `rd, rs1, rs2` | `R[rd] ← R[rs1] - R[rs2]` | Subtract rs2 from rs1 |
-| `AND` | `0110` | `rd, rs1, rs2` | `R[rd] ← R[rs1] & R[rs2]` | Bitwise AND |
-| `OR` | `0111` | `rd, rs1, rs2` | `R[rd] ← R[rs1] \| R[rs2]` | Bitwise OR |
-| `NOT` | `1000` | `rd, rs1` | `R[rd] ← ~R[rs1]` | Bitwise NOT (ones complement) |
-| `CMP` | `1001` | `rs1, rs2` | sets flags only | Compare rs1 and rs2, set Zero/Negative flags |
-| `JMP` | `1010` | `imm6` | `PC ← imm6` | Unconditional jump to address |
-| `BEQ` | `1011` | `imm6` | `if (Zero) PC ← imm6` | Branch if last CMP was equal (Zero flag set) |
-| `BNE` | `1100` | `imm6` | `if (!Zero) PC ← imm6` | Branch if last CMP was not equal |
-| `BLT` | `1101` | `imm6` | `if (Neg) PC ← imm6` | Branch if last CMP result was negative |
-| `HALT` | `1111` | — | `PC ← PC` | Stop execution |
-
-**Status flags** (set by ALU operations and CMP):
-- **Zero (Z)**: set when a result is exactly 0
-- **Negative (N)**: set when the MSB of the result is 1 (result is negative in two's complement)
-- **Carry (C)**: set when an addition overflows 8 bits / subtraction borrows
-
-### Encoding examples
-
-```
-LOADI R1, 5      →  0000 001 000 000101  →  0x0045
-ADD   R3, R1, R2 →  0100 011 001 000010  →  0x4C42
-CMP   R1, R2     →  1001 000 001 000010  →  0x9042
-BNE   12         →  1100 000 000 001100  →  0xC00C
-HALT             →  1111 000 000 000000  →  0xF000
-```
+**Key design points:**
+- **R0 is hardwired to zero** — reads always return 0, writes are silently discarded
+- **Flags are registered** — branch instructions read flags set by the *previous* flag-updating instruction (the CMP). This is a real hardware detail, faithfully implemented in both the Verilog and the JS model
+- **Harvard architecture** — instruction memory and data memory are completely separate, which simplifies the datapath
 
 ---
 
 ## Phase 1 — Verilog CPU Core
 
-Phase 1 builds the CPU milestone by milestone. Each milestone has its own testbench and must be verified before the next begins.
+Built milestone by milestone. Every milestone has its own testbench that must pass before the next begins.
 
-| Milestone | Component | Status |
-|-----------|-----------|--------|
-| M1 | ALU | ✅ Verified (22/22 tests) |
-| M2 | Register File | ✅ Verified (29/29 tests) |
-| M3 | Program Counter & Instruction Memory | ✅ Verified (7/7 tests) |
-| M4 | Control Unit | ✅ Verified (41/41 tests) |
-| M5 | Data Memory | ✅ Verified (8/8 tests) |
-| M6 | Full CPU Integration | ✅ Verified — fetch/decode/execute working |
-| M7 | Test Programs | ✅ Verified (17/17 tests across 3 programs) |
-| M8 | Assembler | ✅ Complete — output matches hand-assembled programs |
+| Milestone | Module | Tests | Result |
+|-----------|--------|-------|--------|
+| M1 | ALU | 22 | ✅ |
+| M2 | Register File | 29 | ✅ |
+| M3 | Program Counter + Instruction Memory | 7 | ✅ |
+| M4 | Control Unit | 41 | ✅ |
+| M5 | Data Memory | 8 | ✅ |
+| M6 | Full CPU integration | — | ✅ |
+| M7 | Three test programs (arithmetic, countdown loop, Fibonacci) | 17 | ✅ |
+| M8 | Python assembler | matches hand-assembled | ✅ |
+| **Total** | | **124** | **✅ all passing** |
 
-See `hardware/` for all source files and testbenches.
+### Test programs
+
+Three programs run on the integrated CPU and verify the final register/memory state:
+
+**Arithmetic** — `(5 + 10) − 3 = 12`, then `12 × 2 = 24`, then `24 AND 15 = 8`
+```asm
+LOADI R1, 5   ;  LOADI R2, 10  ;  ADD R3, R1, R2
+LOADI R6, 3   ;  SUB R3, R3, R6  ;  ADD R4, R3, R3
+LOADI R7, 15  ;  AND R5, R4, R7  ;  HALT
+; Result: R3=12, R4=24, R5=8
+```
+
+**Countdown loop** — counts R1 from 5 to 0 using `CMP` + `BEQ` + `JMP`
+```asm
+LOADI R1, 5 ; LOADI R2, 1 ; LOADI R3, 0 ; LOADI R4, 1
+loop: CMP R1, R0 ; BEQ done ; SUB R1, R1, R2 ; ADD R3, R3, R4 ; JMP loop
+done: HALT
+; Result: R1=0, R3=5 (iteration count)
+```
+
+**Fibonacci** — computes F(2)–F(7) and stores them to data memory addresses 2–7
+```asm
+; Result: mem[2]=1, mem[3]=2, mem[4]=3, mem[5]=5, mem[6]=8, mem[7]=13
+```
+
+### Running with GTKWave
+
+After running any testbench, a `.vcd` waveform file is saved to `waveforms/`. Open it:
+```powershell
+gtkwave waveforms\cpu_final.vcd
+```
+Drag signals into the view: `clk`, `pc`, `instr`, `halt`, and register values. You'll see the Fibonacci program executing — `R1` and `R2` sliding through the Fibonacci sequence, `R4` stepping through memory addresses, `STORE` firing each time a new value is computed.
+
+### Assembler
+
+Write programs in human-readable assembly, assemble to machine code:
+```powershell
+cd hardware/assembler
+python assemble.py ../programs/prog_fibonacci.asm ../programs/out.mem
+```
+
+Syntax:
+```asm
+; Comments with semicolons
+; Labels for jump targets
+    LOADI R1, 42    ; load immediate
+loop:
+    SUB   R1, R1, R2
+    CMP   R1, R0
+    BNE   loop
+    HALT
+```
 
 ---
 
 ## Phase 2 — Animated Visual Simulator
 
-*Not started — begins after Phase 1 is fully verified and confirmed.*
+**[→ https://visualizer-plum.vercel.app](https://visualizer-plum.vercel.app)**
 
-See `visualizer/` for implementation once complete.
+Built with Next.js 14, TypeScript, Tailwind CSS, and Framer Motion. Fully static — no backend, no server.
 
----
+### Features
 
-## Phase 3 — FPGA Hardware
+- **Animated datapath** — glowing signals travel along active paths each cycle: registers → ALU → write-back, branches lighting up the flag register, STORE/LOAD activating the data memory paths
+- **Step mode** — advance one instruction at a time, read the plain-English description ("Subtracting R2 (=1) from R1 (=3) → R1 = 2")
+- **Play mode** — auto-execute with adjustable speed (fast / medium / slow)
+- **Live panels** — registers, flags (Z/N/C), and data memory update in sync with every cycle
+- **Custom program editor** — write assembly in the browser, assemble it, and run it on the visualizer immediately. Includes:
+  - Line-number gutter with red error highlighting
+  - Inline error messages with line numbers
+  - Hex preview of assembled output
+  - Toggleable ISA reference sidebar
 
-*Phase 3 (FPGA deployment) is not being pursued for this project.*
+### JS model accuracy
 
-The two completed phases demonstrate NexaCPU fully:
-- **Phase 1** proves the design is hardware-correct — 124 automated tests pass across all 8 milestones
-- **Phase 2** makes execution visible and understandable to anyone, deployed live at **https://visualizer-plum.vercel.app**
+The `visualizer/lib/cpuModel.ts` behavioral model is verified to produce identical results to the Verilog simulation:
 
-See `fpga/README.md` for notes on what Phase 3 would have involved.
+```
+Program 1 Arithmetic: R1=5 R2=10 R3=12 R4=24 R5=8 R7=15  ✓
+Program 2 Countdown:  R1=0 R3=5                            ✓
+Program 3 Fibonacci:  mem[2..7] = 1,2,3,5,8,13            ✓
+```
+
+The Verilog is the source of truth. The JS model matches it because it implements the same logic — registered flags, R0 hardwired to zero, single-cycle execution — not because it was tested against it once and assumed to be correct.
 
 ---
 
 ## Project Structure
 
 ```
-nexacpu/
-├── hardware/                   # Phase 1 — Verilog CPU core
+NexaCPU/
+├── hardware/
 │   ├── src/
-│   │   ├── alu.v               # Arithmetic/Logic Unit
-│   │   ├── register_file.v     # 8 general-purpose registers
-│   │   ├── program_counter.v   # PC register + incrementer
-│   │   ├── instruction_memory.v # ROM loaded from .mem file
-│   │   ├── data_memory.v       # RAM for LOAD/STORE
-│   │   ├── control_unit.v      # Instruction decoder
-│   │   └── cpu.v               # Top-level integration
-│   ├── testbenches/            # One testbench per module
-│   ├── programs/               # .mem files (hand-assembled + assembled)
+│   │   ├── alu.v                 # Arithmetic/Logic Unit
+│   │   ├── register_file.v       # 8 registers, R0 hardwired zero
+│   │   ├── program_counter.v     # 6-bit PC, load/increment
+│   │   ├── instruction_memory.v  # ROM, loaded from .mem file
+│   │   ├── data_memory.v         # RAM, 64 × 16-bit words
+│   │   ├── control_unit.v        # Instruction decoder → control signals
+│   │   └── cpu.v                 # Top-level integration
+│   ├── testbenches/              # One testbench per module
+│   ├── programs/                 # .asm source + .mem machine code
 │   └── assembler/
-│       └── assemble.py         # Milestone 8 Python assembler
-├── visualizer/                 # Phase 2 — Next.js animated simulator
-│   ├── app/
+│       └── assemble.py           # Two-pass Python assembler
+├── visualizer/
+│   ├── app/                      # Next.js app router
 │   ├── components/
-│   ├── lib/
-│   │   └── cpuModel.ts         # Behavioral JS mirror of the Verilog design
-│   └── package.json
-├── fpga/                       # Phase 3 — FPGA deployment
-│   ├── constraints/
-│   └── README.md
-├── waveforms/                  # GTKWave screenshots & selected .vcd files
-├── README.md
-└── .gitignore
+│   │   ├── Visualizer.tsx        # Top-level layout + state
+│   │   ├── DatapathDiagram.tsx   # SVG datapath + Framer Motion animation
+│   │   ├── InstructionPanel.tsx  # Current instruction + assembly listing
+│   │   ├── RegisterPanel.tsx     # Live register state
+│   │   ├── MemoryPanel.tsx       # Live data memory state
+│   │   ├── Controls.tsx          # Program selector + playback controls
+│   │   └── ProgramEditor.tsx     # Custom program editor panel
+│   └── lib/
+│       ├── cpuModel.ts           # Behavioral JS mirror of the Verilog
+│       └── assembler.ts          # Browser-side assembler (TS port of assemble.py)
+├── waveforms/                    # GTKWave .vcd files from Phase 1 testing
+├── fpga/                         # Phase 3 notes (not pursued)
+└── README.md
 ```
+
+---
+
+## Toolchain setup (Phase 1)
+
+**Icarus Verilog + GTKWave** (free, Windows/Mac/Linux):
+- Windows: https://bleyer.org/icarus/ — the installer bundles GTKWave
+- Mac: `brew install icarus-verilog`
+- Linux: `sudo apt install iverilog gtkwave`
+
+Verify:
+```powershell
+iverilog -V
+gtkwave --version
+```
+
+**Python 3.8+** (for the assembler): https://www.python.org/downloads/
+
+**Node.js 18+** (to run the visualizer locally):
+```powershell
+cd visualizer
+npm install
+npm run dev
+# open http://localhost:3000
+```
+
+---
+
+<div align="center">
+
+Built from first principles. Every wire has a reason.
+
+**[Live demo](https://visualizer-plum.vercel.app) · [Hardware source](hardware/) · [Visualizer source](visualizer/)**
+
+</div>
