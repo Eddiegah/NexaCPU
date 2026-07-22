@@ -1,0 +1,31 @@
+// Assembled from: prog_array_sum.asm
+// 29 instruction(s)
+0E00
+0A0A
+21C5
+0E01
+0A14
+21C5
+0E02
+0A1E
+21C5
+0E03
+0A28
+21C5
+0E04
+0A32
+21C5
+0E05
+0A3C
+21C5
+0200
+0406
+0600
+0801
+9042
+B01C
+1A40
+46C5
+4244
+A016
+F000

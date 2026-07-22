@@ -5,7 +5,7 @@
 **A real CPU, designed from first principles.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-visualizer--plum.vercel.app-38bdf8?style=for-the-badge&logo=vercel&logoColor=white)](https://visualizer-plum.vercel.app)
-[![Phase 1](https://img.shields.io/badge/Phase%201%20Verilog-124%20tests%20passing-22c55e?style=for-the-badge)](hardware/)
+[![Phase 1](https://img.shields.io/badge/Phase%201%20Verilog-158%20tests%20passing-22c55e?style=for-the-badge)](hardware/)
 [![Phase 2](https://img.shields.io/badge/Phase%202%20Visualizer-deployed-a78bfa?style=for-the-badge)](https://visualizer-plum.vercel.app)
 [![ISA](https://img.shields.io/badge/ISA-16--bit%20RISC%20%C2%B7%2015%20instructions-f59e0b?style=for-the-badge)](#the-nexacpu-instruction-set)
 
@@ -143,11 +143,49 @@ Built milestone by milestone. Every milestone has its own testbench that must pa
 | M6 | Full CPU integration | — | ✅ |
 | M7 | Three test programs (arithmetic, countdown loop, Fibonacci) | 17 | ✅ |
 | M8 | Python assembler | matches hand-assembled | ✅ |
-| **Total** | | **124** | **✅ all passing** |
+| **Pipeline** | 2-stage pipelined CPU with forwarding | 20 | ✅ |
+| **Programs** | Array sum, multiply, bubble sort (both CPUs) | 14 | ✅ |
+| **Total** | | **158** | **✅ all passing** |
+
+### 2-Stage Pipelined CPU (`hardware/src/cpu_pipeline.v`)
+
+A second CPU implementation alongside the original single-cycle design:
+
+```
+Cycle:   1      2      3      4      5      6
+IF:     [I1]   [I2]   [I3]   [I4]   [I5]   [I6]
+EX:            [I1]   [I2]   [I3]   [I4]   [I5]
+```
+
+Hazard handling:
+- **Data hazards (RAW)**: forwarding — previous EX result wired directly back to ALU inputs when a register dependency is detected. No stall needed for back-to-back ALU instructions.
+- **LOAD-use stall**: one bubble inserted when a LOAD is immediately followed by an instruction that reads the loaded register.
+- **Control hazards**: one-cycle flush — the wrongly-fetched instruction after a taken branch is replaced with a NOP bubble.
+- **Verified** by a dedicated forwarding test: `LOADI R1,5 / ADD R2,R1,R1 / ADD R3,R2,R1 / HALT` → R1=5, R2=10, R3=15.
 
 ### Test programs
 
-Three programs run on the integrated CPU and verify the final register/memory state:
+**Original three** (Milestones 7):
+- **Arithmetic** — `(5+10)−3=12`, `12×2=24`, `24 AND 15=8`
+- **Countdown loop** — counts R1 from 5 to 0 using CMP + BEQ + JMP
+- **Fibonacci** — computes F(2)–F(7), stores to memory addresses 2–7
+
+**Ambitious programs** (run on both single-cycle and pipelined CPUs):
+
+**Array Sum** — stores `{10,20,30,40,50,60}` into memory, then loops over it accumulating the sum
+```asm
+; Result: R3 = 210
+```
+
+**Multiply** — computes 7 × 9 via repeated addition (how CPUs without hardware multipliers work)
+```asm
+; Result: R3 = 63
+```
+
+**Bubble Sort** — sorts `{5,3,8,1,4}` in data memory into ascending order using nested loops and conditional swaps
+```asm
+; Result: mem[0..4] = {1, 3, 4, 5, 8}
+```
 
 **Arithmetic** — `(5 + 10) − 3 = 12`, then `12 × 2 = 24`, then `24 AND 15 = 8`
 ```asm
