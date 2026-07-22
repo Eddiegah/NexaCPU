@@ -1,0 +1,20 @@
+// Instruction memory test program — Milestone 3
+// Hand-assembled NexaCPU instructions (16-bit hex, one per line)
+//
+// Encoding: {opcode[15:12], rd[11:9], rs1[8:6], imm6/rs2[5:0]}
+//
+// Assembly:            Opcode  rd    rs1  imm6/rs2   Hex
+// LOADI R1, 5       -> 0000   001   000  000101   -> 0205
+// LOADI R2, 10      -> 0000   010   000  001010   -> 040A
+// ADD R3, R1, R2    -> 0100   011   001  000010   -> 4642
+// HALT              -> 1111   000   000  000000   -> F000
+//
+// Verification:
+//   LOADI R1,5:  0000_001_000_000101 = 0000 0010 0000 0101 = 0x0205
+//   LOADI R2,10: 0000_010_000_001010 = 0000 0100 0000 1010 = 0x040A
+//   ADD R3,R1,R2:0100_011_001_000010 = 0100 0110 0100 0010 = 0x4642
+//   HALT:        1111_000_000_000000 = 1111 0000 0000 0000 = 0xF000
+0205
+040A
+4642
+F000

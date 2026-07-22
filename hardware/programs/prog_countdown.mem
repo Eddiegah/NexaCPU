@@ -1,0 +1,13 @@
+// Program 2: Countdown Loop
+// Counts R1 from 5 down to 0, R3 counts iterations
+// Expected result: R1=0, R2=1, R3=5, R4=1
+0205
+0401
+0600
+0801
+9040
+B009
+5242
+46C4
+A004
+F000

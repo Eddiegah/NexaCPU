@@ -1,0 +1,18 @@
+// Program 3: Fibonacci sequence
+// Stores F(2)..F(7) in data memory at addresses 2..7
+// Expected memory: mem[2]=1, mem[3]=2, mem[4]=3, mem[5]=5, mem[6]=8, mem[7]=13
+// (F(0)=0 and F(1)=1 are the seeds, not stored — stored in R1/R2)
+0200
+0401
+0802
+0A08
+0C01
+9105
+B00D
+4642
+2103
+3280
+34C0
+4906
+A005
+F000

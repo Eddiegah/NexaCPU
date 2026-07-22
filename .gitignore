@@ -1,0 +1,67 @@
+# ============================================================
+# NexaCPU .gitignore
+# ============================================================
+
+# --- Phase 1: Verilog simulation outputs ---
+# VCD waveform dumps (large binary-ish files — keep a few representative ones in waveforms/)
+hardware/**/*.vcd
+hardware/**/*.lxt
+hardware/**/*.fst
+# Compiled simulation executables
+hardware/**/*.vvp
+# iverilog intermediate files
+hardware/**/*.o
+
+# Keep selected waveforms in the waveforms/ directory — those are explicitly tracked
+
+# --- Phase 2: Next.js / Node ---
+visualizer/node_modules/
+visualizer/.next/
+visualizer/out/
+visualizer/.env
+visualizer/.env.local
+visualizer/.env.*.local
+visualizer/npm-debug.log*
+visualizer/yarn-debug.log*
+visualizer/yarn-error.log*
+# visualizer has its own nested .git from Vercel — treat it as a plain directory
+# (gitmodules not needed; we commit visualizer source directly)
+visualizer/.vercel/
+visualizer/tsconfig.tsbuildinfo
+visualizer/next-env.d.ts
+# dev helper files
+visualizer/lib/verify.mjs
+
+# --- Phase 3: FPGA build artifacts ---
+# Vivado project files and build outputs
+fpga/*.cache/
+fpga/*.hw/
+fpga/*.ip_user_files/
+fpga/*.runs/
+fpga/*.sim/
+fpga/*.srcs/
+fpga/**/*.bit
+fpga/**/*.bin
+fpga/**/*.log
+fpga/**/*.jou
+# Quartus (Intel/Altera)
+fpga/**/*.qpf
+fpga/**/*.qsf.bak
+fpga/output_files/
+fpga/db/
+fpga/incremental_db/
+
+# --- General ---
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+# Editor
+.vscode/settings.json
+*.swp
+*.swo
+# Python
+__pycache__/
+*.pyc
+*.pyo
+assembler/__pycache__/
