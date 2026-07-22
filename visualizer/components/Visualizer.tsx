@@ -8,6 +8,7 @@ import RegisterPanel from './RegisterPanel';
 import MemoryPanel from './MemoryPanel';
 import InstructionPanel from './InstructionPanel';
 import Controls from './Controls';
+import ProgramEditor from './ProgramEditor';
 
 export default function Visualizer() {
   const [program, setProgram] = useState<Program>(PROGRAMS[0]);
@@ -18,6 +19,7 @@ export default function Visualizer() {
   const [animating, setAnimating] = useState(false);
   const [showTour, setShowTour] = useState(true);
   const [tourStep, setTourStep] = useState(0);
+  const [editorOpen, setEditorOpen] = useState(false);
 
   const cpuRef = useRef<NexaCPU>(new NexaCPU(PROGRAMS[0]));
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -180,6 +182,7 @@ export default function Visualizer() {
         <Controls
           program={program}
           onSelectProgram={handleSelectProgram}
+          onOpenEditor={() => setEditorOpen(true)}
           onStep={handleStep}
           onPlayPause={handlePlayPause}
           onReset={handleReset}
@@ -244,6 +247,13 @@ export default function Visualizer() {
           github.com/Eddiegah/NexaCPU ↗
         </a>
       </footer>
+
+      {/* Program editor slide-in panel */}
+      <ProgramEditor
+        open={editorOpen}
+        onClose={() => setEditorOpen(false)}
+        onLoad={(p) => { handleSelectProgram(p); }}
+      />
     </div>
   );
 }

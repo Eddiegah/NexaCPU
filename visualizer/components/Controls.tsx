@@ -5,6 +5,7 @@ import { Program, PROGRAMS } from '@/lib/cpuModel';
 interface Props {
   program: Program;
   onSelectProgram: (p: Program) => void;
+  onOpenEditor: () => void;
   onStep: () => void;
   onPlayPause: () => void;
   onReset: () => void;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 export default function Controls({
-  program, onSelectProgram,
+  program, onSelectProgram, onOpenEditor,
   onStep, onPlayPause, onReset,
   isPlaying, isHalted,
   speed, onSpeedChange,
@@ -27,7 +28,7 @@ export default function Controls({
       {/* Program selector */}
       <div className="flex items-center gap-2">
         <span className="text-xs text-slate-500 font-mono uppercase">Program</span>
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
           {PROGRAMS.map((p) => (
             <button
               key={p.name}
@@ -41,6 +42,17 @@ export default function Controls({
               {p.name}
             </button>
           ))}
+          {/* Custom program — highlighted differently if active */}
+          <button
+            onClick={onOpenEditor}
+            className={`px-2.5 py-1 rounded text-xs font-mono transition-colors border ${
+              !PROGRAMS.find(p => p.name === program.name)
+                ? 'bg-violet-800 text-violet-100 border-violet-600'
+                : 'bg-slate-800 text-violet-400 border-slate-700 hover:bg-slate-700 hover:text-violet-300'
+            }`}
+          >
+            ✎ Custom
+          </button>
         </div>
       </div>
 
