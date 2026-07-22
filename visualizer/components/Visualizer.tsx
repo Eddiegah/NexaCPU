@@ -108,7 +108,7 @@ export default function Visualizer() {
         <div className="flex items-center gap-4 text-xs font-mono text-slate-500">
           <span>16-bit RISC · 8 registers · Harvard architecture</span>
           <a
-            href="https://github.com"
+            href="https://github.com/Eddiegah/NexaCPU"
             className="text-sky-600 hover:text-sky-400 transition-colors"
             target="_blank" rel="noopener noreferrer"
           >
@@ -239,7 +239,10 @@ export default function Visualizer() {
 
       <footer className="border-t border-slate-800 px-6 py-3 text-xs font-mono text-slate-700 flex justify-between">
         <span>Verilog source of truth in <code>hardware/</code> — this is a verified behavioral mirror</span>
-        <span>Phase 2 of 3 — FPGA deployment pending</span>
+        <a href="https://github.com/Eddiegah/NexaCPU" target="_blank" rel="noopener noreferrer"
+           className="text-slate-600 hover:text-slate-400 transition-colors">
+          github.com/Eddiegah/NexaCPU ↗
+        </a>
       </footer>
     </div>
   );
