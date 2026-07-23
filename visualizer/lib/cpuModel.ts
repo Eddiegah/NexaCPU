@@ -185,6 +185,115 @@ HALT`,
     instructions: [0x0200, 0x0401, 0x0802, 0x0A08, 0x0C01, 0x9105, 0xB00D,
                    0x4642, 0x2103, 0x3280, 0x34C0, 0x4906, 0xA005, 0xF000],
   },
+  {
+    name: 'Array Sum',
+    description: 'Store {10,20,30,40,50,60} in memory, then sum them with a LOAD loop → R3 = 210',
+    source: `; Store the array into mem[0..5]
+    LOADI R7, 0  ;  LOADI R5, 10  ;  STORE R7, R5
+    LOADI R7, 1  ;  LOADI R5, 20  ;  STORE R7, R5
+    LOADI R7, 2  ;  LOADI R5, 30  ;  STORE R7, R5
+    LOADI R7, 3  ;  LOADI R5, 40  ;  STORE R7, R5
+    LOADI R7, 4  ;  LOADI R5, 50  ;  STORE R7, R5
+    LOADI R7, 5  ;  LOADI R5, 60  ;  STORE R7, R5
+; Sum loop
+    LOADI R1, 0         ; pointer = 0
+    LOADI R2, 6         ; limit = 6
+    LOADI R3, 0         ; accumulator
+    LOADI R4, 1         ; step
+loop:
+    CMP   R1, R2
+    BEQ   done
+    LOAD  R5, R1        ; R5 = mem[R1]
+    ADD   R3, R3, R5    ; acc += R5
+    ADD   R1, R1, R4    ; pointer++
+    JMP   loop
+done:
+    HALT                ; R3 = 210`,
+    instructions: [
+      0x0E00, 0x0A0A, 0x21C5,  // mem[0]=10
+      0x0E01, 0x0A14, 0x21C5,  // mem[1]=20
+      0x0E02, 0x0A1E, 0x21C5,  // mem[2]=30
+      0x0E03, 0x0A28, 0x21C5,  // mem[3]=40
+      0x0E04, 0x0A32, 0x21C5,  // mem[4]=50
+      0x0E05, 0x0A3C, 0x21C5,  // mem[5]=60
+      0x0200, 0x0406, 0x0600, 0x0801,  // setup
+      0x9042, 0xB01C,           // loop: CMP, BEQ done(28)
+      0x1A40, 0x46C5, 0x4244, 0xA016,  // LOAD, ADD acc, ADD ptr, JMP loop
+      0xF000,                   // HALT
+    ],
+  },
+  {
+    name: 'Multiply',
+    description: 'Compute 7 × 9 = 63 via repeated addition — how CPUs without hardware multipliers work',
+    source: `    LOADI R1, 7         ; multiplicand
+    LOADI R2, 9         ; multiplier
+    LOADI R3, 0         ; product = 0
+    MOV   R4, R2        ; counter = multiplier
+    LOADI R5, 1         ; step
+loop:
+    CMP   R4, R0        ; counter == 0?
+    BEQ   done
+    ADD   R3, R3, R1    ; product += multiplicand
+    SUB   R4, R4, R5    ; counter--
+    JMP   loop
+done:
+    HALT                ; R3 = 63`,
+    instructions: [0x0207, 0x0409, 0x0600, 0x3880, 0x0A01,
+                   0x9100, 0xB00A, 0x46C1, 0x5905, 0xA005, 0xF000],
+  },
+  {
+    name: 'Bubble Sort',
+    description: 'Sort {5,3,8,1,4} in data memory into ascending order → {1,3,4,5,8}',
+    source: `; Store unsorted array
+    LOADI R4, 1         ; step=1 (used throughout)
+    LOADI R7, 0  ;  LOADI R5, 5  ;  STORE R7, R5
+    LOADI R7, 1  ;  LOADI R5, 3  ;  STORE R7, R5
+    LOADI R7, 2  ;  LOADI R5, 8  ;  STORE R7, R5
+    LOADI R7, 3  ;  LOADI R5, 1  ;  STORE R7, R5
+    LOADI R7, 4  ;  LOADI R5, 4  ;  STORE R7, R5
+; Bubble sort
+    LOADI R1, 4         ; pass limit = N-1
+outer:
+    CMP   R1, R0        ; done?
+    BEQ   sorted
+    LOADI R2, 0         ; inner index = 0
+    MOV   R3, R1        ; inner limit
+inner:
+    CMP   R2, R3
+    BEQ   next_pass
+    LOAD  R5, R2        ; R5 = mem[i]
+    ADD   R7, R2, R4    ; R7 = i+1
+    LOAD  R6, R7        ; R6 = mem[i+1]
+    CMP   R6, R5        ; if mem[i]>mem[i+1], swap
+    BLT   do_swap
+    ADD   R2, R2, R4  ;  JMP inner
+do_swap:
+    STORE R2, R6  ;  STORE R7, R5
+    ADD   R2, R2, R4  ;  JMP inner
+next_pass:
+    SUB   R1, R1, R4  ;  JMP outer
+sorted:
+    HALT`,
+    instructions: [
+      0x0801,
+      0x0E00, 0x0A05, 0x21C5,  // mem[0]=5
+      0x0E01, 0x0A03, 0x21C5,  // mem[1]=3
+      0x0E02, 0x0A08, 0x21C5,  // mem[2]=8
+      0x0E03, 0x0A01, 0x21C5,  // mem[3]=1
+      0x0E04, 0x0A04, 0x21C5,  // mem[4]=4
+      0x0204,                   // LOADI R1, 4
+      0x9040, 0xB024,           // outer: CMP R1,R0  BEQ sorted(36)
+      0x0400, 0x3640,           // LOADI R2,0  MOV R3,R1
+      0x9083, 0xB022,           // inner: CMP R2,R3  BEQ next_pass(34)
+      0x1A80, 0x4E84, 0x1DC0,  // LOAD R5,R2  ADD R7,R2,R4  LOAD R6,R7
+      0x9185, 0xD01E,           // CMP R6,R5  BLT do_swap(30)
+      0x4484, 0xA015,           // no_swap: ADD R2,R2,R4  JMP inner(21)
+      0x2086, 0x21C5,           // do_swap: STORE R2,R6  STORE R7,R5
+      0x4484, 0xA015,           // ADD R2,R2,R4  JMP inner(21)
+      0x5244, 0xA011,           // next_pass: SUB R1,R1,R4  JMP outer(17)
+      0xF000,                   // HALT
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------------------
